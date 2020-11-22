@@ -3,7 +3,7 @@ import React, {
   FormEvent,
   useEffect,
   useRef,
-  useState
+  useState,
 } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -19,12 +19,12 @@ import {
   editTodoActionCreator,
   toggleTodoActionCreator,
   deleteTodoActionCreator,
-  selectTodoActionCreator
+  selectTodoActionCreator,
 } from "../redux-toolkit";
 import { State } from "../type";
 import "./App.css";
 
-const App = function () {
+const App = function() {
   const dispatch = useDispatch();
   const todos = useSelector((state: State) => state.todos);
   const selectedTodoId = useSelector((state: State) => state.selectedTodo);
@@ -36,8 +36,9 @@ const App = function () {
   const editInput = useRef<HTMLInputElement>(null);
 
   const selectedTodo =
-    (selectedTodoId && todos.find(todo => todo.id === selectedTodoId)) || null;
-
+    (selectedTodoId && todos.find((todo) => todo.id === selectedTodoId)) ||
+    null;
+  console.log(selectedTodoId);
   const handleNewInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setNewTodoInput(e.target.value);
   };
@@ -100,7 +101,7 @@ const App = function () {
     dispatch(
       toggleTodoActionCreator({
         id: selectedTodoId,
-        isComplete: !selectedTodo.isComplete
+        isComplete: !selectedTodo.isComplete,
       })
     );
   };
@@ -109,6 +110,35 @@ const App = function () {
     if (!selectedTodoId) return;
 
     dispatch(deleteTodoActionCreator({ id: selectedTodoId }));
+  };
+
+  const ShowSelectedTodo = () => {
+    if (selectedTodo === null) {
+      return <span className="empty-state">No Todo Selected</span>;
+    }
+    return !isEditMode ? (
+      <>
+        <span className={`todo-desc ${selectedTodo?.isComplete ? "done" : ""}`}>
+          {selectedTodo.desc}
+        </span>
+        <div className="todo-actions">
+          <button onClick={handleEdit}>Edit</button>
+          <button onClick={handleToggle}>Toggle</button>
+          <button onClick={handleDelete}>Delete</button>
+        </div>
+      </>
+    ) : (
+      <form onSubmit={handleUpdate}>
+        <label htmlFor="edit-todo">Edit:</label>
+        <input
+          ref={editInput}
+          onChange={handleEditInputChange}
+          value={editTodoInput}
+        />
+        <button type="submit">Update</button>
+        <button onClick={handleCancelUpdate}>Cancel</button>
+      </form>
+    );
   };
 
   return (
@@ -131,47 +161,20 @@ const App = function () {
           <h2>My Todos:</h2>
           {todos.map((todo, i) => (
             <li
-              className={`${todo.isComplete ? "done" : ""} ${
-                todo.id === selectedTodoId ? "active" : ""
-                }`}
+              className={`
+              ${todo.isComplete ? "done" : ""} 
+              ${todo.id === selectedTodoId ? "active" : ""}
+              `}
               key={todo.id}
               onClick={handleSelectTodo(todo.id)}
             >
-              <span className="list-number">{i + 1})</span> {todo.desc}
+              <span className="list-number">{i + 1}</span> {todo.desc}
             </li>
           ))}
         </ul>
         <div className="App_todo-info">
           <h2>Selected Todo:</h2>
-          {selectedTodo === null ? (
-            <span className="empty-state">No Todo Selected</span>
-          ) : !isEditMode ? (
-            <>
-              <span
-                className={`todo-desc ${
-                  selectedTodo?.isComplete ? "done" : ""
-                  }`}
-              >
-                {selectedTodo.desc}
-              </span>
-              <div className="todo-actions">
-                <button onClick={handleEdit}>Edit</button>
-                <button onClick={handleToggle}>Toggle</button>
-                <button onClick={handleDelete}>Delete</button>
-              </div>
-            </>
-          ) : (
-                <form onSubmit={handleUpdate}>
-                  <label htmlFor="edit-todo">Edit:</label>
-                  <input
-                    ref={editInput}
-                    onChange={handleEditInputChange}
-                    value={editTodoInput}
-                  />
-                  <button type="submit">Update</button>
-                  <button onClick={handleCancelUpdate}>Cancel</button>
-                </form>
-              )}
+          <ShowSelectedTodo />
         </div>
       </div>
     </div>
